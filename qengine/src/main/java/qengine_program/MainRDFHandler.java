@@ -5,14 +5,6 @@
 
 package qengine_program;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.commons.collections.map.HashedMap;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
 
@@ -29,10 +21,6 @@ import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
 public final class MainRDFHandler extends AbstractRDFHandler {
 	
 	static int  i = 1;
-	private static Dictionnaire dictio = Dictionnaire.getDictioInstance();
-	private static SPO spo = SPO.getSPOInstance();
-
-	
 	@Override
 	public void handleStatement(Statement st) {
 
@@ -41,9 +29,10 @@ public final class MainRDFHandler extends AbstractRDFHandler {
 			
 		/* Indexation */  
 			/*SPO*/
-		SPO.addToSPO(Dictionnaire.getKey(st.getSubject()), Dictionnaire.getKey(st.getPredicate()), Dictionnaire.getKey(st.getObject()));			
-		
-		System.out.println("\n" + st.getSubject() + "\t " + st.getPredicate() + "\t " + st.getObject());
+		/** Nous avons changé la structure de SPO par rapport au premier rendu */
+		IndexationSPO.addToSPO(Dictionnaire.getKey(st.getSubject()), Dictionnaire.getKey(st.getPredicate()), Dictionnaire.getKey(st.getObject()));		
+
+		//System.out.println("\n" + st.getSubject() + "\t " + st.getPredicate() + "\t " + st.getObject());
 	}
 	
 

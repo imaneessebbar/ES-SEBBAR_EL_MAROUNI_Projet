@@ -37,7 +37,7 @@ public class SPO {
 	}
 	
 	/** Convertir SPO en OSP **/
-	public  ArrayList<ArrayList<Integer>> toOSP() {
+	public static ArrayList<ArrayList<Integer>> toOSP() {
 		ArrayList<ArrayList<Integer>> OSP = new ArrayList<>();
 		ArrayList<Integer> newline = new ArrayList<>();
 		for(ArrayList<Integer> line : SPO){
@@ -51,7 +51,7 @@ public class SPO {
 	}
 	
 	/** Convertir SPO en PSO **/
-	public  ArrayList<ArrayList<Integer>> toPSO() {
+	public static ArrayList<ArrayList<Integer>> toPSO() {
 		ArrayList<ArrayList<Integer>> PSO = new ArrayList<>();
 		ArrayList<Integer> newline = new ArrayList<>();
 		for(ArrayList<Integer> line : SPO){
@@ -65,7 +65,7 @@ public class SPO {
 	}
 	
 	/** Convertir SPO en SOP **/
-	public  ArrayList<ArrayList<Integer>> toSOP() {
+	public static ArrayList<ArrayList<Integer>> toSOP() {
 		ArrayList<ArrayList<Integer>> SOP = new ArrayList<>();
 		ArrayList<Integer> newline = new ArrayList<>();
 		for(ArrayList<Integer> line : SPO){
@@ -79,7 +79,7 @@ public class SPO {
 	}
 	
 	/** Convertir SPO en POS **/
-	public  ArrayList<ArrayList<Integer>> toPOS() {
+	public static  ArrayList<ArrayList<Integer>> toPOS() {
 		ArrayList<ArrayList<Integer>> POS = new ArrayList<>();
 		ArrayList<Integer> newline = new ArrayList<>();
 		for(ArrayList<Integer> line : SPO){
@@ -93,7 +93,7 @@ public class SPO {
 	}
 	
 	/** Convertir SPO en OPS **/
-	public  ArrayList<ArrayList<Integer>> toOPS() {
+	public static ArrayList<ArrayList<Integer>> toOPS() {
 		ArrayList<ArrayList<Integer>> OPS = new ArrayList<>();
 		ArrayList<Integer> newline = new ArrayList<>();
 		for(ArrayList<Integer> line : SPO){

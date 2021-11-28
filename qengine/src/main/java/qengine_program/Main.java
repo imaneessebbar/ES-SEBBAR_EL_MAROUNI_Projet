@@ -5,8 +5,10 @@
 
 package qengine_program;
 
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -17,10 +19,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.query.algebra.Projection;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
-import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.eclipse.rdf4j.query.algebra.helpers.StatementPatternCollector;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
@@ -47,17 +52,21 @@ import org.eclipse.rdf4j.rio.Rio;
 final class Main {
 	static final String baseURI = null;
 	
-	static HashMap<Integer,Object> dictio_ ;
-	
-	static SPO spo = SPO.getSPOInstance();
+	static int j; // compteur requetes juste pour l'ecriture
+
+	static IndexationSPO spo = IndexationSPO.getSPOInstance();
+
 	static Dictionnaire dictio = Dictionnaire.getDictioInstance();
 	
+	//static HashMap<Integer,Object> dictio_ ;
 	//static ArrayList<ArrayList<Integer>> SPO_; 
-	/*static ArrayList<ArrayList<Integer>> OSP; 
-	static ArrayList<ArrayList<Integer>> PSO; 
-	static ArrayList<ArrayList<Integer>> SOP; 
-	static ArrayList<ArrayList<Integer>> POS; 
-	static ArrayList<ArrayList<Integer>> OPS; */
+	
+	 /*static HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> OSP; 
+	 static HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> PSO; 
+	 static HashMap<Integer, HashMap<Integer, ArrayList<Integer>>>POS; 
+	 static HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> OPS;
+	 static HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> SOP;*/
+
 
 	/**
 	 * Votre répertoire de travail où vont se trouver les fichiers à lire
@@ -67,12 +76,12 @@ final class Main {
 	/**
 	 * Fichier contenant les requêtes sparql
 	 */
-	static final String queryFile = workingDir + "sample_query.queryset";
+	static  String queryFile = workingDir + "STAR_ALL_workload.queryset";
 
 	/**
 	 * Fichier contenant des données rdf
 	 */
-	static final String dataFile = workingDir + "sample_data.nt";
+	static  String dataFile = workingDir + "100K.nt";
 
 	// ========================================================================
 
@@ -82,63 +91,35 @@ final class Main {
 	public static void processAQuery(ParsedQuery query) {
 		List<StatementPattern> patterns = StatementPatternCollector.process(query.getTupleExpr());
 
-		/*System.out.println("first pattern : " + patterns.get(0));
-
-		System.out.println("object of the first pattern : " + patterns.get(0).getObjectVar().getValue());
-
-		System.out.println("variables to project : ");*/
-		int i = 0;
-		Value subject ;
-		Value object ;
-		Value predicate ;
-
-		int subject_indx ;
-		int object_indx ;
-		int predicate_indx ;
-		
-		//dictio 
-
-		while( i  < patterns.size() ) {
-			System.out.println("first pattern : " + patterns.get(i));
-
-			subject = patterns.get(i).getSubjectVar().getValue();
-			object = patterns.get(i).getObjectVar().getValue();
-			predicate = patterns.get(i).getPredicateVar().getValue();
-			
-			// valeur dans le dictionnaire
-			
-			/*if(subject != null && dictio.containsValue(subject) ){
-				//subject_indx = dictio.
-			}else {
-				dictio.put(dictio.size()+1,subject);
-			}*/
-			
-			
-			System.out.println("object of the "+i+" pattern : " + patterns.get(i).getObjectVar().getValue());
-			System.out.println("subject of the "+i+" pattern : " + patterns.get(i).getPredicateVar().getValue());
-			System.out.println("predicate of the "+i+" pattern : " + patterns.get(i).getSubjectVar().getValue());
-
-			System.out.println("variables to project : ");
-			
-			
-			i++;
-		}
-
-		// Utilisation d'une classe anonyme
-		query.getTupleExpr().visit(new AbstractQueryModelVisitor<RuntimeException>() {
-
-			public void meet(Projection projection) {
-				System.out.println(projection.getProjectionElemList().getElements());
-			}
-		});
+		QueryProcess qp = new QueryProcess();  
+		 qp.getResult(patterns);  // là ou se passe le processus
+		 writes_into_file(qp.toString());
 	}
 	
-
 
 	/**
 	 * Entrée du programme
 	 */
 	public static void main(String[] args) throws Exception {
+		
+		j = 1; // initialisation du compteur à 1
+		
+		/*final Options options = configParameters();
+        final CommandLineParser parser = new DefaultParser();
+        final CommandLine line = parser.parse(options, args);
+
+        boolean helpMode = line.hasOption("help"); // args.length == 0
+        if (helpMode) {
+            final HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("RDFEngine", options, true);
+            System.exit(0);
+        }
+        if(options.getOption("queries").getValue()!=null) {
+        	        queryFile = options.getOption("queries").getValue();
+        }if( options.getOption("data").getValue()!=null) {
+            dataFile = options.getOption("data").getValue();
+        }*/
+
 		parseData();
 		parseQueries();
 	}
@@ -176,7 +157,9 @@ final class Main {
 					ParsedQuery query = sparqlParser.parseQuery(queryString.toString(), baseURI);
 
 					processAQuery(query); // Traitement de la requête, à adapter/réécrire pour votre programme
-
+					
+					j++; // incrementation du compteur des requetes
+					
 					queryString.setLength(0); // Reset le buffer de la requête en chaine vide
 				}
 			}
@@ -210,21 +193,60 @@ final class Main {
 			
 			dictio.print();
 			spo.print();
-			
+
 			
 			/********** Les autres **********/
+			/*SOP = SPO_bis.toSOP();
+			OSP = SPO_bis.toOSP();
+			PSO = SPO_bis.toPSO();
+			POS = SPO_bis.toPOS();
+			OPS = SPO_bis.toOPS();
 			
-			/*OSP = spo.toOSP();
-			PSO = spo.toPSO();
-			SOP = spo.toSOP();
-			POS = spo.toPOS();
-			OPS = spo.toOPS();
-			
-			System.out.println("OSP : \n" + OSP + " \n ");
-			System.out.println("PSO : \n" + PSO + " \n ");
-			System.out.println("SOP : \n" + SOP + " \n ");
-			System.out.println("POS : \n" + POS + " \n ");
-			System.out.println("OPS : \n" + OPS );*/
+			System.out.println("SOP : \n" );spo.print(SOP);
+			System.out.println("OSP : \n" );spo.print(OSP);
+			System.out.println("PSO : \n" );spo.print(PSO);
+			System.out.println("POS : \n" );spo.print(POS);
+			System.out.println("OPS : \n" );spo.print(OPS);*/
+					
+
 		}
 	}
+	
+	public static void writes_into_file(String result){
+        try {
+            BufferedWriter fWriter = new BufferedWriter(new FileWriter("outputs\\results.txt",true));
+            BufferedWriter bw = new BufferedWriter(fWriter);
+            bw.write("Result query  "+ j+" : ");
+            bw.newLine();
+            bw.write(result);// ici tu mets ce que tu veux ecrire dans ton fichier
+            bw.newLine();
+            bw.close();
+        }catch (IOException e) {
+            System.out.print(e.getMessage());
+        }
+	}
+	private static Options configParameters() {
+
+        final Option helpFileOption = Option.builder("h").longOpt("help").desc("affiche le menu d'aide").build();
+
+        final Option queriesOption = Option.builder("queries").longOpt("queries").hasArg(true)
+                .argName("/chemin/vers/dossier/requetes").desc("Le chemin vers les queries").required(false).build();
+
+        final Option dataOption = Option.builder("data").longOpt("data").hasArg(true)
+                .argName("/chemin/vers/fichier/donnees").desc("Le chemin vers les donnees").required(false).build();
+
+        final Option outputOption = Option.builder("output").longOpt("output").hasArg(true)
+                .argName("/chemin/vers/dossier/sortie").desc("Le chemin vers le dossier de sortie").required(false)
+                .build();
+
+        final Options options = new Options();
+        options.addOption(queriesOption);
+        options.addOption(dataOption);
+        options.addOption(outputOption);
+        options.addOption(helpFileOption);
+
+        return options;
+    }
+	
+	
 }

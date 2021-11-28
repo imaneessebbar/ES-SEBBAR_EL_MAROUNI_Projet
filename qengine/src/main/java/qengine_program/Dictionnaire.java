@@ -63,6 +63,7 @@ public class Dictionnaire {
     }
 	
 	/** Affichage **/
+	@SuppressWarnings("rawtypes")
 	public void print() {
 		System.out.println("Dictionnaire : \n {");
 		 for (Map.Entry x : dictio.entrySet()) {
